@@ -1,12 +1,12 @@
 import React from 'react';
-import { AutoComplete, InputNumber, Button, Table } from 'antd';
+import { AutoComplete, InputNumber, Button, Table, Icon } from 'antd';
 import './App.css';
 
 class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            amounts: [1000, 1000, 1000],
+            amounts: [0, 0, 0],
             mfs: ["", "", ""],
             error: null,
             allMfs: [],
@@ -15,6 +15,7 @@ class App extends React.Component {
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.addRow = this.addRow.bind(this);
     }
     handleChange(value, n) {
         this.setState({amounts: this.state.amounts.map((item, index) => {
@@ -34,10 +35,17 @@ class App extends React.Component {
             }
         })});
     }
+    addRow() {
+        this.setState({
+            mfs: [...this.state.mfs, ""],
+            amounts: [...this.state.amounts, 0]
+        });
+    }
 
     handleSubmit() {
         let dataSource = [];
         console.log(this.state);
+        this.setState({showTable: false});
         fetch("http://localhost:8000/getHoldings", {
             method: 'POST',
             body: JSON.stringify({
@@ -63,7 +71,7 @@ class App extends React.Component {
     }
 
     render() {
-        const { error, allMfs, tableRows, showTable } = this.state;
+        const { error, allMfs, tableRows, showTable, mfs } = this.state;
         let tableCols = [{
             title: 'Stock',
             dataIndex: 'stock',
@@ -77,7 +85,7 @@ class App extends React.Component {
         return (
             <div style={{textAlign:"center"}}>
                 <form onSubmit={this.handleSubmit}>
-                    {[1,2,3].map((_,index)  => (
+                    {mfs.map((_,index)  => (
                         <div>
                             <AutoComplete
                                 style={{ width: "40vw", padding: 10 }}
@@ -91,8 +99,10 @@ class App extends React.Component {
                             <InputNumber placeholder="Amount" onChange={value => this.handleChange(value, index)} />
                         </div>
                     ))}
+
                     <div>
-                        <Button type="primary" onClick={this.handleSubmit}>Submit</Button>
+                        <Button style={{margin:10}} type="primary" onClick={this.addRow}>Add row</Button>
+                        <Button style={{margin:10}} type="primary" onClick={this.handleSubmit}>Submit</Button>
                     </div>
                 </form>
                 {showTable ? (
