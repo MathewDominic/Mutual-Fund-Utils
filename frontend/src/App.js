@@ -1,27 +1,29 @@
 import React from 'react';
-import ReactAutocomplete from 'react-autocomplete/dist/react-autocomplete'
+import { AutoComplete, InputNumber, Button, Table } from 'antd';
+import './App.css';
 
 class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            amounts: [0, 0, 0],
-            mfs: [0, 0, 0],
+            amounts: [1000, 1000, 1000],
+            mfs: ["", "", ""],
             error: null,
-            mfToIdDict: {},
+            allMfs: [],
+            tableRows : [],
+            showTable: false
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
-    handleChange(event, n) {
+    handleChange(value, n) {
         this.setState({amounts: this.state.amounts.map((item, index) => {
             if(index == n) {
-                return event.target.value
+                return value
             } else {
                 return item;
             }
         })});
-        event.preventDefault();
     }
     onSelect(mf, n) {
         this.setState({mfs: this.state.mfs.map((item, index) => {
@@ -33,63 +35,83 @@ class App extends React.Component {
         })});
     }
 
-    handleSubmit(event) {
+    handleSubmit() {
+        let dataSource = [];
         console.log(this.state);
-        fetch("http://localhost:800/getHoldings",
-                {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        mfs: this.state.mfs,
-                        amounts: this.state.amounts
-                    }),
-                    mode: "no-cors",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-        event.preventDefault();
+        fetch("http://localhost:8000/getHoldings", {
+            method: 'POST',
+            body: JSON.stringify({
+                mfs: this.state.mfs,
+                amounts: this.state.amounts
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data =>
+            this.setState({
+                tableRows: data["data"].map(obj => {
+	                var rObj = {"stock":obj[0],"value":obj[1]};
+	                return rObj
+                }),
+                showTable: true
+            })
+        );
+
+
     }
 
     render() {
-        const { error, mfToIdDict } = this.state;
+        const { error, allMfs, tableRows, showTable } = this.state;
+        let tableCols = [{
+            title: 'Stock',
+            dataIndex: 'stock',
+            key: 'stock',
+        }, {
+            title: 'Value',
+            dataIndex: 'value',
+            key: 'value',
+        }];
         let data = [];
-        for(let k in mfToIdDict) {
-            data.push({id: mfToIdDict[k], label: k})
-        }
         return (
-            <form onSubmit={this.handleSubmit}>
-                {[1,2,3].map((_,index)  => (
+            <div style={{textAlign:"center"}}>
+                <form onSubmit={this.handleSubmit}>
+                    {[1,2,3].map((_,index)  => (
+                        <div>
+                            <AutoComplete
+                                style={{ width: "40vw", padding: 10 }}
+                                dataSource={allMfs}
+                                placeholder="Select Mutual Fund"
+                                filterOption={(inputValue, option) =>
+                                    option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                }
+                                onSelect={value => this.onSelect(value, index)}
+                            />
+                            <InputNumber placeholder="Amount" onChange={value => this.handleChange(value, index)} />
+                        </div>
+                    ))}
                     <div>
-                        Select MF:
-                        <ReactAutocomplete
-                            items={data}
-                            shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
-                            getItemValue={item => item.id}
-                            renderItem={(item, highlighted) =>
-                                <div key={item.id} style={{ backgroundColor: highlighted ? '#eee' : 'transparent'}}>
-                                    {item.label}
-                                </div>
-                            }
-                            onSelect={mf => this.onSelect(mf, index)}
-                        />
-                        <label>
-                            Amount:
-                            <input type="text" name="name" onChange={(e) => this.handleChange(e, index )}/>
-                        </label>
+                        <Button type="primary" onClick={this.handleSubmit}>Submit</Button>
                     </div>
-                ))}
+                </form>
+                {showTable ? (
+                    <div style={{padding: 10}}>
+                        <Table style={{ paddingLeft: "27vw", paddingRight: "27vw" }} dataSource={tableRows} columns={tableCols} />
+                    </div>) : null
+                }
+            </div>
 
-                <input type="submit" value="Submit" />
-            </form>
+
         )
     }
     componentDidMount() {
-        fetch("http://localhost:800/getAllMfs")
+        fetch("http://localhost:8000/getAllMfs")
             .then(res => res.json())
             .then(
                 (result) => {
                     this.setState({
-                        mfToIdDict: result
+                        allMfs: Object.keys(result)
                     });
                 },
                 (error) => {
