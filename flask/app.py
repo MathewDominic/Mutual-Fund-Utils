@@ -23,7 +23,7 @@ def get_all_mfs():
 @app.route('/getHoldings', methods=['POST'])
 def get_all_holdings():
     params = json.loads(request.data.decode('utf-8'))
-    stock_value_in_mfs = get_stocks_in_mf_value(list(map(int, params['mfs'])), list(map(int, params['amounts'])))
+    stock_value_in_mfs = get_stocks_in_mf_value([MF_TO_ID_DICT[x] for x in params['mfs'] if x != ''], params['amounts'])
     response = jsonify({
         "data": stock_value_in_mfs
     })

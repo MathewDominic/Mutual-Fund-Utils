@@ -46,7 +46,7 @@ def get_stocks_in_mf_value(mf_ids, amounts):
             continue
         stock_to_holdings_percent_dict = get_mf_stock_holdings_percent(mf_id)
         for stock in stock_to_holdings_percent_dict:
-            stock_value_dict[stock] += stock_to_holdings_percent_dict[stock] * amounts[index] / 100
+            stock_value_dict[stock] += int(stock_to_holdings_percent_dict[stock] * amounts[index] / 100)
     return sorted(stock_value_dict.items(), key=operator.itemgetter(1), reverse=True)
 
 
