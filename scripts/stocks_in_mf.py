@@ -7,7 +7,7 @@ from scripts.constants import MF_TO_ID_DICT
 
 
 def get_mf_stock_holdings_percent(mf_id):
-    '''accepts value researh mf id and returns dict of indivigual stocs percentage in portfolio'''
+    '''accepts value research mf id and returns dict of individual stocks percentage in portfolio'''
     url = "https://www.valueresearchonline.com/funds/portfoliovr.asp"
     querystring = {"schemecode": str(mf_id)}
 
@@ -31,7 +31,10 @@ def get_mf_stock_holdings_percent(mf_id):
         if i < 2:
             continue
         cols = row.find_all('td')
-        stock_holdings_percent[cols[1].text.strip()] = float(cols[6].text)
+        try:
+            stock_holdings_percent[cols[1].text.strip()] = float(cols[6].text)
+        except:
+            continue
     return stock_holdings_percent
 
 
@@ -40,14 +43,16 @@ def get_stocks_in_mf_value(mf_ids, amounts):
     function which accepts dict with key as mf name in VR and value as amount invested in mf
     returns value of holdings in individual stocks
     '''
-    stock_value_dict = defaultdict(lambda: 0)
+    stock_dict = defaultdict(lambda: {"value": 0, "mfs": {}})
     for index, mf_id in enumerate(mf_ids):
         if amounts[index] == 0:
             continue
-        stock_to_holdings_percent_dict = get_mf_stock_holdings_percent(mf_id)
-        for stock in stock_to_holdings_percent_dict:
-            stock_value_dict[stock] += int(stock_to_holdings_percent_dict[stock] * amounts[index] / 100)
-    return sorted(stock_value_dict.items(), key=operator.itemgetter(1), reverse=True)
+        stock_to_holding_percent_dict = get_mf_stock_holdings_percent(mf_id)
+        for stock in stock_to_holding_percent_dict:
+            stock_value = int(stock_to_holding_percent_dict[stock] * amounts[index] / 100)
+            stock_dict[stock]["value"] += stock_value
+            stock_dict[stock]["mfs"][mf_id] = stock_value
+    return sorted(stock_dict.items(), key=lambda x: x[1]["value"], reverse=True)
 
 
 # stocks_in_mf_value = get_stocks_in_mf_value({
