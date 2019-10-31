@@ -1,7 +1,8 @@
 import json
-import scripts.util as util
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from scripts.util import get_rolling_returns
 from scripts.stocks_in_mf import get_stocks_in_mf_value
 from scripts.constants import MF_TO_ID_DICT
 
@@ -16,12 +17,12 @@ def hello_world():
 
 @app.route('/getAllMfs')
 def get_all_mfs():
-    response = jsonify(MF_TO_ID_DICT)
+    response = jsonify(dict((v, k) for k, v in MF_TO_ID_DICT.items()))
     return response
 
 
-@app.route('/getHoldings', methods=['POST'])
-def get_all_holdings():
+@app.route('/stockHoldings', methods=['POST'])
+def stock_holdings():
     params = json.loads(request.data.decode('utf-8'))
     stock_value_in_mfs = get_stocks_in_mf_value(
         [MF_TO_ID_DICT[x] for x in params['mfs'] if x != ''],
@@ -30,11 +31,12 @@ def get_all_holdings():
     response = jsonify(stock_value_in_mfs)
     return response
 
-@app.route('/getRollingReturns', methods=['POST', 'GET'])
-def get_rolling_returns():
+
+@app.route('/rollingReturns', methods=['POST'])
+def rolling_returns():
     params = json.loads(request.data.decode('utf-8'))
     response = jsonify({
-        params['mfs'][0]: util.get_rolling_returns(MF_TO_ID_DICT[params['mfs'][0]], params['timeFrame']),
-        params['mfs'][1]: util.get_rolling_returns(MF_TO_ID_DICT[params['mfs'][1]], params['timeFrame'])
+        params['mfs'][0]: get_rolling_returns(MF_TO_ID_DICT[params['mfs'][0]], params['timeFrame']),
+        params['mfs'][1]: get_rolling_returns(MF_TO_ID_DICT[params['mfs'][1]], params['timeFrame'])
     })
     return response
