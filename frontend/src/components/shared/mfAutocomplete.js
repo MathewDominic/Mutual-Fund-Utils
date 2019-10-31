@@ -10,7 +10,7 @@ class MfAutocomplete extends React.Component {
     render() {
         return (
             <AutoComplete
-                style={{ width: "40vw", padding: 10 }}
+                style={{ width:"400px", padding: 10 }}
                 dataSource={this.props.mfsArray}
                 placeholder="Select Mutual Fund"
                 filterOption={(inputValue, option) =>
