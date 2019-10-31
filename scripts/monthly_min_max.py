@@ -3,7 +3,7 @@ from scripts import util
 
 
 def sip_date_diff(mf_id, sip_amount):
-    nav_df = util.get_nav_data_dataframe(mf_id)
+    nav_df = util.get_nav_data(mf_id)
 
     monthwise_min = nav_df.loc[nav_df.groupby(["year", "month"])["nav"].idxmin()]
     monthwise_max = nav_df.loc[nav_df.groupby(["year", "month"])["nav"].idxmax()]

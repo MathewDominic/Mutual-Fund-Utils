@@ -68,6 +68,7 @@ def insert_holiday_date_nav(nav_data, current_ts, previous_ts, current_nav, data
 def get_current_nav(nav_df):
     return nav_df.iloc[-1]["nav"]
 
+
 def get_cagr(new_value, old_value, timeframe):
     cagr = ((new_value/old_value)**(1/timeframe)-1) * 100
     return round(cagr, 2)

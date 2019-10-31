@@ -10,7 +10,7 @@ def get_sip_num_of_units(nav_on_day, sip_amount):
     return units
 
 def get_diff_date_sip_diff(mf_id, sip_amount):
-    nav_df = util.get_nav_data_dataframe(mf_id, insert_holiday_dates=True)
+    nav_df = util.get_nav_data(mf_id, insert_holiday_dates=True)
     amount_on_date = {}
     for i in range(1, 29):
         nav_on_day = nav_df[nav_df["day"] == i]
