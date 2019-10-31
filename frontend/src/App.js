@@ -1,15 +1,15 @@
 import React from 'react';
 import { AutoComplete, InputNumber, Button, Table, Icon } from 'antd';
-import './App.css';
+import ApiClient from './services/apiClient'
 
 class App extends React.Component {
     constructor(props) {
         super(props);
+        this.apiClient = new ApiClient();
         this.state = {
             amounts: [0, 0, 0],
             mfs: ["", "", ""],
-            error: null,
-            allMfs: [],
+            allMfsDict: {},
             tableRows : [],
             showTable: false
         };
@@ -43,53 +43,71 @@ class App extends React.Component {
     }
 
     handleSubmit() {
-        let dataSource = [];
-        console.log(this.state);
         this.setState({showTable: false});
-        fetch("http://localhost:8000/getHoldings", {
-            method: 'POST',
-            body: JSON.stringify({
+        this.apiClient.post(
+            "stockHoldings",
+            {
                 mfs: this.state.mfs,
                 amounts: this.state.amounts
-            }),
-            headers: {
-                'Content-Type': 'application/json'
+            },
+            (data) => {
+                this.setState({
+                    tableRows: data.map((obj, index) => {
+                        return {
+                            "key": index,
+                            "stock": obj[0],
+                            "value": obj[1]["value"],
+                            "mfs": JSON.stringify(obj[1]["mfs"])
+                        }
+                    }),
+                    showTable: true
+                })
             }
-        })
-        .then(res => res.json())
-        .then(data =>
-            this.setState({
-                tableRows: data["data"].map(obj => {
-	                var rObj = {"stock":obj[0],"value":obj[1]};
-	                return rObj
-                }),
-                showTable: true
-            })
         );
-
-
     }
 
     render() {
-        const { error, allMfs, tableRows, showTable, mfs } = this.state;
+        const { allMfsDict, tableRows, showTable, mfs } = this.state;
         let tableCols = [{
             title: 'Stock',
             dataIndex: 'stock',
             key: 'stock',
         }, {
-            title: 'Value',
+            title: 'Amount',
             dataIndex: 'value',
             key: 'value',
         }];
-        let data = [];
+
+
+        const expandedRowRender = (record) => {
+            const columns = [
+                { title: 'Mutual Fund', dataIndex: 'mf', key: 'date' },
+                { title: 'Amount', dataIndex: 'amount', key: 'name' },
+            ];
+
+            const data = [];
+            const mfToAmount = JSON.parse(record["mfs"]);
+            for (let i = 0; i < Object.keys(mfToAmount).length; i++) {
+                data.push({
+                    key: i,
+                    mf: allMfsDict[Object.keys(mfToAmount)[i]],
+                    amount: mfToAmount[Object.keys(mfToAmount)[i]],
+                });
+            }
+            return <Table columns={columns} dataSource={data} pagination={false}/>;
+        };
+
+
+        let allMfsArray = Object.values(allMfsDict).sort();
         return (
+
             <div style={{textAlign:"center"}}>
                 <form onSubmit={this.handleSubmit}>
                     {mfs.map((_,index)  => (
                         <div>
                             <AutoComplete
-                                style={{ width: "40vw", padding: 10 }}
-                                dataSource={allMfs}
+                                style={{ width: "400px", padding: 10 }}
+                                dataSource={allMfsArray}
                                 placeholder="Select Mutual Fund"
                                 filterOption={(inputValue, option) =>
                                     option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
@@ -105,10 +123,15 @@ class App extends React.Component {
                         <Button style={{margin:10}} type="primary" onClick={this.handleSubmit}>Submit</Button>
                     </div>
                 </form>
-                {showTable ? (
+                {showTable && (
                     <div style={{padding: 10}}>
-                        <Table style={{ paddingLeft: "27vw", paddingRight: "27vw" }} dataSource={tableRows} columns={tableCols} />
-                    </div>) : null
+                        <Table
+                            style={{ paddingLeft: "27vw", paddingRight: "27vw" }}
+                            dataSource={tableRows}
+                            columns={tableCols}
+                            expandedRowRender={expandedRowRender}
+                        />
+                    </div>)
                 }
             </div>
 
@@ -116,22 +139,15 @@ class App extends React.Component {
         )
     }
     componentDidMount() {
-        fetch("http://localhost:8000/getAllMfs")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        allMfs: Object.keys(result)
-                    });
-                },
-                (error) => {
-                    this.setState({
-                        isLoaded: true,
-                        error
-                    });
-                }
-            )
-        }
+        this.apiClient.get(
+            "getAllMfs",
+            (result) => {
+                this.setState({
+                    allMfsDict: result
+                });
+            }
+        );
     }
+}
 
 export default App;
