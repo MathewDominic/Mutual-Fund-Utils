@@ -4,20 +4,30 @@ import { Route, BrowserRouter as Router } from 'react-router-dom'
 import './index.css';
 import App from './App';
 import './App.css';
+import {Layout} from 'antd'
+import { Typography } from 'antd';
 import RollingReturns from './components/rollingReturns'
-
+import StockHoldings from './components/stockHoldings'
 import * as serviceWorker from './serviceWorker';
 
-const routing = (
-    <Router>
-        <Route exact path="/" component={RollingReturns} />
-        <Route exact path="/stocks" component={App} />
-    </Router>
+const { Header, Footer, Sider, Content } = Layout;
+const { Title } = Typography;
+
+
+ReactDOM.render(
+    <div>
+        <Layout>
+          <Header>
+            <Title style={{textAlign:"center", color: "white"}}> Mutual Fund Utils </Title>
+            <Content>
+                <Router>
+                    <Route exact path="/" component={App} />
+                    <Route exact path="/returns" component={RollingReturns} />
+                    <Route exact path="/stocks" component={StockHoldings} />
+                </Router>
+            </Content>
+          </Header>
+        </Layout>
+    </div>,
+    document.getElementById('root')
 );
-ReactDOM.render(routing, document.getElementById('root'));
-
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
