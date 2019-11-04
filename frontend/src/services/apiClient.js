@@ -15,7 +15,7 @@ class ApiClient {
               error => console.log("Error in http call", error));
     }
     get(url, onSuccessCallback) {
-        fetch("http://localhost:8000/getAllMfs")
+        fetch(this.baseUrl + url)
             .then(res => res.json())
             .then(data => onSuccessCallback(data),
                   error => console.log("Error in http call", error)
