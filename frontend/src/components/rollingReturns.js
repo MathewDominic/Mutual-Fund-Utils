@@ -4,7 +4,11 @@ import HighchartsReact from 'highcharts-react-official';
 import Highcharts from 'highcharts';
 import MfChooseList from './shared/mfChooseList';
 import {Button, InputNumber} from "antd";
+import { Typography } from 'antd';
 import ApiClient from '../services/apiClient'
+
+const { Title } = Typography;
+
 
 class RollingReturns extends Component {
     constructor(props) {
@@ -19,7 +23,7 @@ class RollingReturns extends Component {
                     text: 'Rolling return comparator'
                 },
                 subtitle: {
-                    text: 'Data point shows rolling returns period ending on that date',
+                    text: 'Data point shows rolling returns for period ending on that date',
                 },
                 xAxis: {
                     type: 'datetime',
@@ -40,6 +44,7 @@ class RollingReturns extends Component {
             timeFrame: '',
             mfs: ['', ''],
             showChart: false,
+            loading: false
         };
         this.handleChange = this.handleChange.bind(this);
         this.onSelect = this.onSelect.bind(this);
@@ -49,7 +54,7 @@ class RollingReturns extends Component {
         this.setState({timeFrame})
     }
     handleSubmit() {
-        this.setState({showChart: false});
+        this.setState({showChart: false, loading: true});
         this.apiClient.post(
             "rollingReturns",
             {
@@ -70,7 +75,8 @@ class RollingReturns extends Component {
                         ...this.state.chartOptions,
                         series: chartData
                     },
-                    showChart: true
+                    showChart: true,
+                    loading: false
                 })
             }
         );
@@ -86,13 +92,14 @@ class RollingReturns extends Component {
     }
 
     render() {
-        const { chartOptions, showChart, allMfsDict } = this.state;
+        const { chartOptions, showChart, loading, allMfsDict } = this.state;
         let allMfsArray = Object.values(allMfsDict).sort();
         return (
             <div style={{textAlign:"center"}}>
+                <Title level={4}> Compare Rolling returns of MFs for different time frames </Title>
                 <MfChooseList numberOfInputs={2} mfsArray={allMfsArray} onSelect={this.onSelect}/>
                 <InputNumber style={{width: "200px"}}placeholder="Enter time frame in years" onChange={this.handleChange} />
-                <Button style={{margin:10}} type="primary" onClick={this.handleSubmit}>Submit</Button>
+                <Button style={{margin:10}} type="primary" onClick={this.handleSubmit} loading={loading}>Submit</Button>
                 {showChart && <HighchartsReact
                     highcharts={Highcharts}
                     options={chartOptions}
