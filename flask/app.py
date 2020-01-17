@@ -38,7 +38,6 @@ class Google(db.Model):
 
 @app.route('/')
 def hello_world():
-    r = Google.query.all()
     return 'Hello, World from Flask!'
 
 
@@ -67,13 +66,6 @@ def rolling_returns():
         params['mfs'][1]: get_rolling_returns(MF_TO_ID_DICT[params['mfs'][1]], params['timeFrame'])
     })
     return response
-
-
-@app.route('/bangalore', methods=['GET'])
-def bangalore():
-    tags = ('shopping_mall', 'museum')
-    lmt = 10
-    return jsonify([i.as_dict() for i in Google.query.filter(Google.tag.in_(tags)).limit(lmt)])
 
 
 if __name__ == "__main__":

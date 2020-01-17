@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def get_nav_data_from_api(mf_id):
-    resp = requests.get(f"https://www.valueresearchonline.com/funds/fundVSindex.asp?Sch={mf_id}&obj=equity")
+    resp = requests.get(f"https://www.valueresearchonline.com/api/funds/trailing-returns-chart/{mf_id}")
     return json.loads(resp.content)[1][0]['data']
 
 

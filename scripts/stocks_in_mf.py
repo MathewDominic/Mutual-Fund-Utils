@@ -8,8 +8,7 @@ from scripts.constants import MF_TO_ID_DICT
 
 def get_mf_stock_holdings_percent(mf_id):
     '''accepts value research mf id and returns dict of individual stocks percentage in portfolio'''
-    url = "https://www.valueresearchonline.com/funds/portfoliovr.asp"
-    querystring = {"schemecode": str(mf_id)}
+    url = f"https://www.valueresearchonline.com/funds/{mf_id}/"
 
     headers = {
         'Accept': "*/*",
@@ -19,16 +18,16 @@ def get_mf_stock_holdings_percent(mf_id):
         'Connection': "keep-alive",
     }
 
-    response = requests.request("GET", url, headers=headers, params=querystring)
+    response = requests.request("GET", url, headers=headers)
     soup = BeautifulSoup(response.text)
     table = soup.find(lambda tag:
                       tag.name == 'table'
                       and tag.has_attr('id')
-                      and tag['id'] == "fund-snapshot-port-holdings")
+                      and tag['id'] == "equity-holdings-table")
     rows = table.find_all('tr')
     stock_holdings_percent = {}
     for i, row in enumerate(rows):
-        if i < 2:
+        if i == 0:
             continue
         cols = row.find_all('td')
         try:
