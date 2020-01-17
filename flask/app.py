@@ -40,3 +40,7 @@ def rolling_returns():
         params['mfs'][1]: get_rolling_returns(MF_TO_ID_DICT[params['mfs'][1]], params['timeFrame'])
     })
     return response
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=80)
